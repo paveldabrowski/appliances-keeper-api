@@ -33,3 +33,5 @@ build/
 .vscode/
 /logs/spring.log
 /src/main/resources/keys/ibm.json
+#/src/main/resources/keys/apikey.json
+/src/main/resources/keys/apikey.json

@@ -38,12 +38,12 @@ public class ModelsController extends ApplianceAbstractController<Model, Long> {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addModelWithFiles(@RequestPart("model") Model model,
-                                               @RequestPart("file") MultipartFile [] multipart) {
-
-
+    public ResponseEntity<?> saveModelWithFiles(@RequestPart("model") Model model,
+                                                @RequestPart("file") MultipartFile[] multipart) {
         log.info("addModelWithFiles invoked");
+        Model savedModel = modelsService.saveModelWithFilesByPrefix(model, multipart);
 
-    return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok(savedModel);
     }
 }
