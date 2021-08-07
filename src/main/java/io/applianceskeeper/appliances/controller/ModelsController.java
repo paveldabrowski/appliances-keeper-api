@@ -1,10 +1,11 @@
 package io.applianceskeeper.appliances.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.applianceskeeper.appliances.model.Model;
 import io.applianceskeeper.appliances.service.ModelsService;
 import io.applianceskeeper.appliances.utils.ApplianceAbstractController;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +15,15 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@RequestMapping("/appliances/models")
+@RequestMapping(value = "/appliances/models")
+@CrossOrigin(exposedHeaders = {"Ibm-Token"})
 public class ModelsController extends ApplianceAbstractController<Model, Long> {
 
     private final ModelsService modelsService;
-    private final ObjectMapper mapper;
 
-    ModelsController(ModelsService service, ModelsService modelsService, ObjectMapper mapper) {
+    ModelsController(ModelsService service, ModelsService modelsService) {
         super(service);
         this.modelsService = modelsService;
-        this.mapper = mapper;
     }
 
     @GetMapping(params = {"brand"})
@@ -37,13 +37,16 @@ public class ModelsController extends ApplianceAbstractController<Model, Long> {
         return ResponseEntity.ok(modelsService.checkIfModelExistsInProvidedBrand(modelName, brandId));
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/upload",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.MULTIPART_MIXED_VALUE},
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> saveModelWithFiles(@RequestPart("model") Model model,
                                                 @RequestPart("file") MultipartFile[] multipart) {
-        log.info("addModelWithFiles invoked");
+        log.info("ADD MODEL WITH FILES invoked");
         Model savedModel = modelsService.saveModelWithFilesByPrefix(model, multipart);
-
-
-        return ResponseEntity.ok(savedModel);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Ibm-Token", modelsService.getIbmToken());
+//        httpHeaders.setAccessControlExposeHeaders(List.of("Ibm-Token", "Authorization"));
+        return new ResponseEntity<>(savedModel, httpHeaders, HttpStatus.OK);
     }
 }

@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,6 +31,6 @@ public class Model {
     private String description;
     @OneToMany(mappedBy = "model")
     @JsonManagedReference
-    private Set<Picture> photos;
+    private List<Picture> photos;
 
 }

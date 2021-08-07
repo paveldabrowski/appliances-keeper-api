@@ -1,20 +1,23 @@
 package io.applianceskeeper.appliances.service;
 
+import com.ibm.cloud.objectstorage.services.s3.model.S3ObjectSummary;
 import io.applianceskeeper.appliances.data.ModelsRepository;
 import io.applianceskeeper.appliances.model.Model;
-import io.applianceskeeper.appliances.model.Picture;
 import io.applianceskeeper.appliances.utils.ApplianceAbstractService;
 import io.applianceskeeper.objectstorage.IBMService;
-import io.applianceskeeper.technicians.service.PicturesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -49,8 +52,8 @@ public class ModelsService extends ApplianceAbstractService<Model, Long> {
         if (directory.isPresent()) {
             var id = savedModel.getId();
             ibmService.uploadDirectoryWithPrefix(id.toString(), directory.get());
-            Set<Picture> pictures = ibmService.getPicturesByPrefix(savedModel);
-            picturesService.saveAll(pictures);
+            List<S3ObjectSummary> pictures = ibmService.getPicturesByPrefix(savedModel);
+            picturesService.saveAll(pictures, model);
         }
         entityManager.flush();
         entityManager.refresh(savedModel);
@@ -80,5 +83,9 @@ public class ModelsService extends ApplianceAbstractService<Model, Long> {
             });
         }
         return Optional.of(directory);
+    }
+
+    public String getIbmToken() {
+        return ibmService.getToken();
     }
 }

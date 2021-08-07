@@ -6,6 +6,7 @@ import com.ibm.cloud.objectstorage.auth.AWSStaticCredentialsProvider;
 import com.ibm.cloud.objectstorage.auth.JsonCredentials;
 import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder;
 import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
+import com.ibm.cloud.objectstorage.oauth.DefaultTokenManager;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3ClientBuilder;
 import com.ibm.cloud.objectstorage.services.s3.model.Bucket;
@@ -17,7 +18,6 @@ import com.ibm.cloud.objectstorage.services.s3.transfer.ObjectMetadataProvider;
 import com.ibm.cloud.objectstorage.services.s3.transfer.TransferManager;
 import com.ibm.cloud.objectstorage.services.s3.transfer.TransferManagerBuilder;
 import io.applianceskeeper.appliances.model.Model;
-import io.applianceskeeper.appliances.model.Picture;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -30,8 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -71,6 +69,8 @@ public class IBMService {
         var jsonCredentials = new JsonCredentials(this.getClass().getResourceAsStream(credentialsPath));
         BasicIBMOAuthCredentials credentials = new BasicIBMOAuthCredentials(jsonCredentials.getApiKey(),
                 jsonCredentials.getServiceInstanceId());
+        var tokenManager = (DefaultTokenManager) credentials.getTokenManager();
+
         this.token = "Bearer " + credentials.getTokenManager().getToken();
         ClientConfiguration clientConfig = new ClientConfiguration()
                 .withRequestTimeout(5000)
@@ -112,12 +112,8 @@ public class IBMService {
         return cosClient.listBuckets();
     }
 
-    public Set<Picture> getPicturesByPrefix(Model model) {
-        List<S3ObjectSummary> picturesByPrefix = getBucketContentsV2ByPrefix(model.getId().toString());
-        return picturesByPrefix
-                .stream()
-                .map(s3ObjectSummary -> new Picture(model, s3ObjectSummary))
-                .collect(Collectors.toSet());
+    public List<S3ObjectSummary> getPicturesByPrefix(Model model) {
+        return getBucketContentsV2ByPrefix(model.getId().toString());
     }
 
     public List<S3ObjectSummary> getBucketContentsV2ByPrefix(String prefix) {
@@ -159,7 +155,6 @@ public class IBMService {
 
     public void uploadDirectoryWithPrefix(String prefix, File directory) {
         log.info("Starting large file upload with TransferManager");
-//        var transferManager = createTransportManager();
         try {
             MultipleFileUpload upload = uploadDirectory(directory, prefix);
             upload.waitForCompletion();
