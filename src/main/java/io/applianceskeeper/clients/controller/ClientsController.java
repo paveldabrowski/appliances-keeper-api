@@ -1,5 +1,6 @@
 package io.applianceskeeper.clients.controller;
 
+import io.applianceskeeper.clients.ClientStillReferencedException;
 import io.applianceskeeper.clients.NoSuchClientFoundException;
 import io.applianceskeeper.clients.models.Client;
 import io.applianceskeeper.clients.service.ClientsService;
@@ -56,6 +57,8 @@ public class ClientsController {
             return ResponseEntity.noContent().build();
         } catch (NoSuchClientFoundException | NullPointerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (ClientStillReferencedException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 

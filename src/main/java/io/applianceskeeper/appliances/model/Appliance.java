@@ -1,5 +1,6 @@
 package io.applianceskeeper.appliances.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.applianceskeeper.clients.models.Client;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,7 +26,8 @@ public class Appliance {
     private Model model;
     @OneToOne(cascade = CascadeType.MERGE)
     private Brand brand;
-    @OneToOne(cascade = CascadeType.MERGE)
+    @JsonBackReference
+    @ManyToOne(cascade = CascadeType.MERGE)
     private Client client;
 
 

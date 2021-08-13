@@ -1,6 +1,7 @@
 package io.applianceskeeper.appliances.utils;
 
 
+import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
@@ -27,5 +28,9 @@ public abstract class ApplianceAbstractService<T, S> implements ApplianceService
     @Override
     public boolean checkIfNameExists(String name) {
         return repository.existsByNameIgnoreCase(name);
+    }
+
+    public void delete(S id) throws NotFoundException {
+        repository.deleteById(id);
     }
 }

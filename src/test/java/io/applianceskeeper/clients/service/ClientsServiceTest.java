@@ -1,5 +1,6 @@
 package io.applianceskeeper.clients.service;
 
+import io.applianceskeeper.clients.ClientStillReferencedException;
 import io.applianceskeeper.clients.NoSuchClientFoundException;
 import io.applianceskeeper.clients.data.ClientsRepository;
 import io.applianceskeeper.clients.models.Client;
@@ -24,7 +25,7 @@ class ClientsServiceTest {
     private ClientsRepository repository;
 
     @Test
-    void shouldDeleteClient() throws NoSuchClientFoundException {
+    void shouldDeleteClient() throws NoSuchClientFoundException, ClientStillReferencedException {
         //given
         Client client = new Client();
         client.setId(1L);

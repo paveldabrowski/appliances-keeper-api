@@ -29,8 +29,8 @@ public class Model {
     @JoinColumn(name = "appliance_type_id")
     private ApplianceType applianceType;
     private String description;
-    @OneToMany(mappedBy = "model")
+    @OneToMany(mappedBy = "model", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonManagedReference
-    private List<Picture> photos;
+    private List<Image> images;
 
 }

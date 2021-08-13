@@ -2,10 +2,15 @@ package io.applianceskeeper.appliances.service;
 
 import com.ibm.cloud.objectstorage.services.s3.model.S3ObjectSummary;
 import io.applianceskeeper.appliances.data.ModelsRepository;
+import io.applianceskeeper.appliances.model.Image;
 import io.applianceskeeper.appliances.model.Model;
 import io.applianceskeeper.appliances.utils.ApplianceAbstractService;
+import io.applianceskeeper.appliances.utils.ModelNotFoundException;
 import io.applianceskeeper.objectstorage.IBMService;
+import io.applianceskeeper.utils.SortedPaginatedFiltered;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,20 +26,20 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-public class ModelsService extends ApplianceAbstractService<Model, Long> {
+public class ModelsService extends ApplianceAbstractService<Model, Long> implements SortedPaginatedFiltered<Page<Model>> {
 
     private final ModelsRepository modelsRepository;
     private final IBMService ibmService;
     private final EntityManager entityManager;
-    private final PicturesService picturesService;
+    private final ModelImagesService modelImagesService;
 
     public ModelsService(ModelsRepository repository, IBMService ibmService, EntityManager entityManager,
-                         PicturesService picturesService) {
+                         ModelImagesService modelImagesService) {
         super(repository);
         this.modelsRepository = repository;
         this.ibmService = ibmService;
         this.entityManager = entityManager;
-        this.picturesService = picturesService;
+        this.modelImagesService = modelImagesService;
     }
 
     public List<Model> findAllByBrand(String brandName) {
@@ -53,7 +58,7 @@ public class ModelsService extends ApplianceAbstractService<Model, Long> {
             var id = savedModel.getId();
             ibmService.uploadDirectoryWithPrefix(id.toString(), directory.get());
             List<S3ObjectSummary> pictures = ibmService.getPicturesByPrefix(savedModel);
-            picturesService.saveAll(pictures, model);
+            modelImagesService.saveAll(pictures, model);
         }
         entityManager.flush();
         entityManager.refresh(savedModel);
@@ -87,5 +92,28 @@ public class ModelsService extends ApplianceAbstractService<Model, Long> {
 
     public String getIbmToken() {
         return ibmService.getToken();
+    }
+
+    public List<Image> getModelPicturesWithUrls(Long id) {
+        return modelImagesService.getModelPicturesWithUrls(id);
+    }
+
+    @Override
+    public Page<Model> getSortedPagedFiltered(Optional<String> searchTerm, Pageable pageable) {
+        return modelsRepository.findAllSortedPagedFiltered(searchTerm.orElse(""), pageable);
+    }
+
+    @Override
+    public void delete(Long id) throws ModelNotFoundException {
+        Optional<Model> model = modelsRepository.findById(id);
+        if (model.isPresent()) {
+            Model modelFormBackend = model.get();
+            List<Image> images = modelFormBackend.getImages();
+            String[] keys = images.stream().map(Image::getIbmKey).toArray(String[]::new);
+            ibmService.deleteObjects(keys);
+            modelsRepository.deleteById(id);
+        } else {
+            throw new ModelNotFoundException();
+        }
     }
 }

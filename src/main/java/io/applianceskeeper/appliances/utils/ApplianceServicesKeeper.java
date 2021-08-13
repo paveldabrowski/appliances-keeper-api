@@ -11,4 +11,5 @@ public interface ApplianceServicesKeeper<T> {
     T add(T t);
 
     boolean checkIfNameExists(String name);
+
 }

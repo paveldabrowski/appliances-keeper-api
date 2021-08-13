@@ -4,7 +4,6 @@ import io.applianceskeeper.commissions.data.CommissionsRepository;
 import io.applianceskeeper.commissions.models.Commission;
 import io.applianceskeeper.commissions.utils.CommissionNotFound;
 import io.applianceskeeper.technicians.service.TechniciansTermsService;
-import io.applianceskeeper.technicians.utils.TechnicianTermNotFoundException;
 import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -57,7 +56,7 @@ public class CommissionService {
     }
 
     @Transactional
-    public void deleteCommission(Long id) throws TechnicianTermNotFoundException, CommissionNotFound {
+    public void deleteCommission(Long id) throws CommissionNotFound {
         var optionalCommission = repository.findById(id);
         if (optionalCommission.isPresent()) {
             var commission = optionalCommission.get();

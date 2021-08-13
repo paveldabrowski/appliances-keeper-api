@@ -1,6 +1,6 @@
 package io.applianceskeeper.utils;
 
-public interface SearchBySearTerm<T> {
+public interface SearchBySearchTerm<T> {
 
     T findAllBySearchTerm(String searchTerm);
 }

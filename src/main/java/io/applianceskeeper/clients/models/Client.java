@@ -1,5 +1,7 @@
 package io.applianceskeeper.clients.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import io.applianceskeeper.appliances.model.Appliance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -10,6 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -45,6 +48,9 @@ public class Client {
     @Email(message = "Email is not valid.")
     private String email;
     private String description;
+    @JsonManagedReference
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "client")
+    List<Appliance> appliances;
 
     @Override
     public boolean equals(Object o) {

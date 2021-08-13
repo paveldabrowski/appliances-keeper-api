@@ -2,7 +2,7 @@ package io.applianceskeeper.technicians.controller;
 
 import io.applianceskeeper.technicians.models.Technician;
 import io.applianceskeeper.technicians.service.TechniciansService;
-import io.applianceskeeper.utils.SearchBySearTerm;
+import io.applianceskeeper.utils.SearchBySearchTerm;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/technicians")
 @AllArgsConstructor
-public class TechniciansController implements SearchBySearTerm<ResponseEntity<List<Technician>>> {
+public class TechniciansController implements SearchBySearchTerm<ResponseEntity<List<Technician>>> {
 
     private final TechniciansService service;
 

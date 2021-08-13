@@ -3,7 +3,6 @@ package io.applianceskeeper.commissions.controller;
 import io.applianceskeeper.commissions.models.Commission;
 import io.applianceskeeper.commissions.service.CommissionService;
 import io.applianceskeeper.commissions.utils.CommissionNotFound;
-import io.applianceskeeper.technicians.utils.TechnicianTermNotFoundException;
 import javassist.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,8 +39,8 @@ public class CommissionsController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Commission>> getSortedPagedFilteredCommissions(@RequestParam("searchTerm") Optional<String> searchTerm,
-                                                                              Pageable pageable) {
+    public ResponseEntity<Page<Commission>> getSearchedSortedPagedFiltered(
+            @RequestParam("searchTerm") Optional<String> searchTerm, Pageable pageable) {
         return ResponseEntity.ok(service.getSortedPagedFilteredCommissions(searchTerm.orElse(""), pageable));
     }
 
@@ -78,7 +77,7 @@ public class CommissionsController {
 
     @Transactional
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCommission(@PathVariable("id") Long id) throws TechnicianTermNotFoundException {
+    public ResponseEntity<?> deleteCommission(@PathVariable("id") Long id) {
         try {
             service.deleteCommission(id);
             return ResponseEntity.noContent().build();

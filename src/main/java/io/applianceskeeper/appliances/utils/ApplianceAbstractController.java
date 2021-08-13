@@ -1,16 +1,14 @@
 package io.applianceskeeper.appliances.utils;
 
+import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @AllArgsConstructor
-public abstract class ApplianceAbstractController<T, ID> implements ControllersMethodsProvider<T>  {
+public abstract class ApplianceAbstractController<T, ID> implements ControllersMethodsProvider<T> {
 
     private final ApplianceAbstractService<T, ID> service;
 
@@ -32,5 +30,16 @@ public abstract class ApplianceAbstractController<T, ID> implements ControllersM
     @GetMapping(params = {"nameExists"})
     public ResponseEntity<Boolean> checkIfNameExists(@RequestParam("nameExists") String name) {
         return ResponseEntity.ok(service.checkIfNameExists(name));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") ID id) {
+        try {
+            service.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

@@ -1,8 +1,10 @@
 package io.applianceskeeper.clients.service;
 
+import io.applianceskeeper.clients.ClientStillReferencedException;
 import io.applianceskeeper.clients.NoSuchClientFoundException;
 import io.applianceskeeper.clients.data.ClientsRepository;
 import io.applianceskeeper.clients.models.Client;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +32,15 @@ public class ClientsService {
         return repository.save(client);
     }
 
-    public void deleteClient(Long id) throws NoSuchClientFoundException, NullPointerException {
+    public void deleteClient(Long id) throws NoSuchClientFoundException, NullPointerException, ClientStillReferencedException {
         if (id != null)
             try {
                 repository.deleteById(id);
-            } catch (EmptyResultDataAccessException e){
+            } catch (EmptyResultDataAccessException e) {
                 throw new NoSuchClientFoundException("No client found with id: " + id);
+            } catch (DataIntegrityViolationException e) {
+                System.out.println(e.getMessage());
+                throw new ClientStillReferencedException();
             }
         else
             throw new NullPointerException("No client find with id: null");

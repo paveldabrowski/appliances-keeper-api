@@ -9,9 +9,9 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name = "models_pictures")
+@Table(name = "models_images")
 @NoArgsConstructor
-public class Picture {
+public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,10 @@ public class Picture {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JsonBackReference
     private Model model;
+    @Transient
+    private String url;
 
-    public Picture(Model model, S3ObjectSummary ibmListedObject) {
+    public Image(Model model, S3ObjectSummary ibmListedObject) {
         this.model = model;
         this.ibmKey = ibmListedObject.getKey();
     }

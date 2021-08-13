@@ -9,10 +9,7 @@ import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
 import com.ibm.cloud.objectstorage.oauth.DefaultTokenManager;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3ClientBuilder;
-import com.ibm.cloud.objectstorage.services.s3.model.Bucket;
-import com.ibm.cloud.objectstorage.services.s3.model.ListObjectsV2Request;
-import com.ibm.cloud.objectstorage.services.s3.model.ListObjectsV2Result;
-import com.ibm.cloud.objectstorage.services.s3.model.S3ObjectSummary;
+import com.ibm.cloud.objectstorage.services.s3.model.*;
 import com.ibm.cloud.objectstorage.services.s3.transfer.MultipleFileUpload;
 import com.ibm.cloud.objectstorage.services.s3.transfer.ObjectMetadataProvider;
 import com.ibm.cloud.objectstorage.services.s3.transfer.TransferManager;
@@ -39,7 +36,7 @@ public class IBMService {
     private final String endpointUrl;
     private final String location;
     private AmazonS3 cosClient;
-    private Bucket bucket;
+    private String bucketName;
     @Getter
     private String token;
     private TransferManager transferManager;
@@ -58,7 +55,7 @@ public class IBMService {
     public void initIBMService() {
         try {
             cosClient = createClient(endpointUrl, location);
-            bucket = initBucket();
+            bucketName = initBucket();
             transferManager = createTransportManager();
         } catch (BucketNotFoundException | IOException e) {
             e.printStackTrace();
@@ -84,13 +81,29 @@ public class IBMService {
 
     }
 
-    private Bucket initBucket() throws BucketNotFoundException {
+    private String initBucket() throws BucketNotFoundException {
         var buckets = listBuckets(cosClient);
-        return buckets.stream().
+
+        Bucket applianceBucket = buckets.stream().
                 filter(localBucket -> localBucket.getName()
                         .contains("appliance"))
                 .findFirst()
                 .orElseThrow(BucketNotFoundException::new);
+        var conf = cosClient.getBucketCrossOriginConfiguration(applianceBucket.getName());
+
+        if (conf != null) {
+            CORSRule corsRule = new CORSRule()
+                    .withId("CORSRule1")
+                    .withAllowedOrigins(List.of("*"))
+                    .withAllowedHeaders(List.of("*"))
+                    .withAllowedMethods(List.of(CORSRule.AllowedMethods.DELETE, CORSRule.AllowedMethods.GET,
+                            CORSRule.AllowedMethods.HEAD, CORSRule.AllowedMethods.POST, CORSRule.AllowedMethods.PUT))
+                    .withMaxAgeSeconds(3000);
+            BucketCrossOriginConfiguration originConfiguration = new BucketCrossOriginConfiguration().withRules(corsRule);
+            cosClient.setBucketCrossOriginConfiguration(applianceBucket.getName(), originConfiguration);
+        }
+
+        return applianceBucket.getName();
     }
 
     /**
@@ -117,14 +130,14 @@ public class IBMService {
     }
 
     public List<S3ObjectSummary> getBucketContentsV2ByPrefix(String prefix) {
-        log.info("Retrieving bucket contents (V2) from: " + bucket.getName());
+        log.info("Retrieving bucket contents (V2) from: " + bucketName);
         boolean moreResults = true;
         String nextToken = "";
         List<S3ObjectSummary> summaryList = new ArrayList<>();
 
         while (moreResults) {
             ListObjectsV2Request request = new ListObjectsV2Request()
-                    .withBucketName(bucket.getName())
+                    .withBucketName(bucketName)
                     .withMaxKeys(1000)
                     .withContinuationToken(nextToken)
                     .withPrefix(prefix);
@@ -147,7 +160,7 @@ public class IBMService {
 
     private void printBucketContent(ListObjectsV2Result result) {
         for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
-            var url = cosClient.getUrl(bucket.getName(), objectSummary.getKey()).toString();
+            var url = cosClient.getUrl(bucketName, objectSummary.getKey()).toString();
             System.out.printf("Item: %s (%s bytes)\n %s", objectSummary.getKey(), objectSummary.getSize(), url);
             System.out.println();
         }
@@ -171,7 +184,6 @@ public class IBMService {
     }
 
     private void cleanAfterUpload(File directory) {
-//        transferManager.shutdownNow();
         if (directory != null && directory.exists()) {
             try {
                 FileUtils.forceDelete(directory);
@@ -188,21 +200,16 @@ public class IBMService {
             metadata.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         };
 
-        MultipleFileUpload upload = transferManager.uploadDirectory(
-                bucket.getName(),
-                prefix,
-                directory,
-                true,
-                metadataProvider
-        );
-//        upload.addProgressListener(new ProgressListener() {
-//            @Override
-//            public void progressChanged(ProgressEvent progressEvent) {
-//                log.info("Progress: " + progressEvent.getBytes() + " / " + progressEvent.getBytesTransferred());
-//            }
-//        });
-        return upload;
+        return transferManager.uploadDirectory(bucketName, prefix, directory, true, metadataProvider);
     }
 
+    public String getImageUrlByKey(String ibmKey) {
+        return cosClient.getUrl(bucketName, ibmKey).toString();
+    }
 
+    public void deleteObjects(String[] keys) {
+        var result = cosClient.deleteObjects(new DeleteObjectsRequest(bucketName).withKeys(keys));
+        List<DeleteObjectsResult.DeletedObject> deletedObjects = result.getDeletedObjects();
+        deletedObjects.forEach(deletedObject -> deletedObject.getKey());
+    }
 }
