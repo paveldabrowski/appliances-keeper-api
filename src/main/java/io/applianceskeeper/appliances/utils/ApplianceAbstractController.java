@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @AllArgsConstructor
 public abstract class ApplianceAbstractController<T, ID> implements ControllersMethodsProvider<T> {
@@ -40,6 +41,15 @@ public abstract class ApplianceAbstractController<T, ID> implements ControllersM
         } catch (NotFoundException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<T> findById(@PathVariable("id") ID id) {
+        try {
+            return ResponseEntity.ok(service.findById(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

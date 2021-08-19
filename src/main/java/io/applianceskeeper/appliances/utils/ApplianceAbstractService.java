@@ -3,10 +3,13 @@ package io.applianceskeeper.appliances.utils;
 
 import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
+
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @AllArgsConstructor
-public abstract class ApplianceAbstractService<T, S> implements ApplianceServicesKeeper<T> {
+public abstract class ApplianceAbstractService<T, S> implements ApplianceServicesKeeper<T, S> {
 
     protected ApplianceRepositoriesKeeper<T, S> repository;
 
@@ -32,5 +35,11 @@ public abstract class ApplianceAbstractService<T, S> implements ApplianceService
 
     public void delete(S id) throws NotFoundException {
         repository.deleteById(id);
+    }
+
+    @Override
+    public T findById(S id) throws NoSuchElementException {
+        Optional<T> entity = repository.findById(id);
+        return entity.orElseThrow();
     }
 }

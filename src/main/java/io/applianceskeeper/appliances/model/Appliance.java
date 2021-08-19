@@ -3,7 +3,6 @@ package io.applianceskeeper.appliances.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.applianceskeeper.clients.models.Client;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -18,8 +17,7 @@ import java.util.Objects;
 public class Appliance {
 
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String serialNumber;
     @OneToOne(cascade = CascadeType.MERGE)

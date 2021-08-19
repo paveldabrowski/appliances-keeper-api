@@ -8,13 +8,10 @@ import io.applianceskeeper.technicians.utils.TechnicianNotFoundException;
 import io.applianceskeeper.technicians.utils.WorkDayNotFoundException;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Set;
@@ -22,6 +19,7 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class TechnicianWorkingDaysService {
+
 
     private final TechniciansWorkingDaysRepository repository;
     private final TechniciansService techniciansService;
@@ -55,10 +53,11 @@ public class TechnicianWorkingDaysService {
         dateFilter.setParameter("date", workingDayDate);
         var technician = techniciansService.findById(technicianId);
         session.close();
-        if (!technician.getWorkingDays().isEmpty())
+        if (!technician.getWorkingDays().isEmpty()) {
             return (TechnicianWorkingDay) technician.getWorkingDays().toArray()[0];
-        else
+        } else {
             throw new WorkDayNotFoundException();
+        }
     }
 
     public Set<TechnicianWorkingDay> getWorkingDays(Integer id) throws TechnicianNotFoundException {

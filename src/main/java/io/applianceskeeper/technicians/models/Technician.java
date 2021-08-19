@@ -22,8 +22,7 @@ import java.util.Set;
 public class Technician {
 
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
     private String lastName;

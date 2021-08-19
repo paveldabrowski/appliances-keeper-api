@@ -32,7 +32,7 @@ public class TechniciansWorkingDaysController {
     @GetMapping(value = "/{id}/workingDays", params = {"workingDay"})
     public ResponseEntity<?> getTechnicianWorkingDayHours(@PathVariable("id") Integer technicianId,
                                                           @RequestParam("workingDay")
-                                                          @DateTimeFormat(pattern = "dd/MM/yyyy")
+                                                          @DateTimeFormat(pattern = "dd.MM.yyyy")
                                                                   LocalDate workingDayDate) {
         try {
             return ResponseEntity.ok(service.getTechnicianWorkingDay(technicianId, workingDayDate));

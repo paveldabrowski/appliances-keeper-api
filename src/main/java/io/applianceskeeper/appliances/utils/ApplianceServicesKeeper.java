@@ -2,7 +2,7 @@ package io.applianceskeeper.appliances.utils;
 
 import java.util.List;
 
-public interface ApplianceServicesKeeper<T> {
+public interface ApplianceServicesKeeper<T, ID> {
 
     List<T> findAll();
 
@@ -12,4 +12,5 @@ public interface ApplianceServicesKeeper<T> {
 
     boolean checkIfNameExists(String name);
 
+    T findById(ID id);
 }

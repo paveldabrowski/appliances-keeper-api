@@ -4,12 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Table(name = "appliances_types")
@@ -21,8 +17,7 @@ import java.util.Objects;
 public class ApplianceType {
 
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
 

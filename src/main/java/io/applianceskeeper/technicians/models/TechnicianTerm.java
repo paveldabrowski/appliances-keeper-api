@@ -1,13 +1,12 @@
 package io.applianceskeeper.technicians.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.applianceskeeper.commissions.models.Commission;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
@@ -19,8 +18,7 @@ import java.time.LocalDate;
 public class TechnicianTerm {
 
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Hour hour;
     private LocalDate date;

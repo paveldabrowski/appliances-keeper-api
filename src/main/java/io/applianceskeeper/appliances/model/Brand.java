@@ -20,8 +20,7 @@ import java.util.Objects;
 public class Brand {
 
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
 //    @OneToMany(mappedBy = "brand")

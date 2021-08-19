@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.FilterDefs;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
 
 import javax.persistence.*;
@@ -26,15 +25,15 @@ import java.util.Set;
                 }, defaultCondition = "date = :date")}
 
 )
-@Entity
-@Table(name = "technicians_calendar")
 @Getter
 @Setter
+@Entity
+@Table(name = "technicians_calendar")
 @RequiredArgsConstructor
 public class TechnicianWorkingDay {
+
     @Id
-    @GeneratedValue(generator = "inc")
-    @GenericGenerator(name = "inc", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate date;
     @ManyToOne
