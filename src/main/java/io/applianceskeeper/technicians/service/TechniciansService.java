@@ -4,14 +4,18 @@ import io.applianceskeeper.technicians.data.TechnicianRepository;
 import io.applianceskeeper.technicians.models.Technician;
 import io.applianceskeeper.technicians.utils.TechnicianNotFoundException;
 import io.applianceskeeper.utils.SearchBySearchTerm;
+import io.applianceskeeper.utils.SortedPaginatedFiltered;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class TechniciansService implements SearchBySearchTerm<List<Technician>> {
+public class TechniciansService implements SearchBySearchTerm<List<Technician>>, SortedPaginatedFiltered<Page<Technician>> {
 
     private final TechnicianRepository repository;
 
@@ -28,4 +32,8 @@ public class TechniciansService implements SearchBySearchTerm<List<Technician>> 
         return repository.findById(id).orElseThrow(TechnicianNotFoundException::new);
     }
 
+    @Override
+    public Page<Technician> getSortedPagedFiltered(Optional<String> searchTerm, Pageable pageable) {
+        return repository.findAllSortedPagedFiltered(searchTerm.orElse(""), pageable);
+    }
 }
