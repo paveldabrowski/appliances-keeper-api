@@ -1,5 +1,6 @@
 package io.applianceskeeper.technicians.controller;
 
+import io.applianceskeeper.technicians.models.MonthlyCalendar;
 import io.applianceskeeper.technicians.models.Technician;
 import io.applianceskeeper.technicians.service.TechniciansService;
 import io.applianceskeeper.utils.SearchBySearchTerm;
@@ -8,10 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,5 +37,10 @@ public class TechniciansController implements SearchBySearchTerm<ResponseEntity<
     @Override
     public ResponseEntity<Page<Technician>> getSortedPagedFiltered(Optional<String> searchTerm, Pageable pageable) {
         return ResponseEntity.ok(service.getSortedPagedFiltered(searchTerm, pageable));
+    }
+
+    @PostMapping("/calendar")
+    public ResponseEntity<MonthlyCalendar> createWorkingDays(@RequestBody MonthlyCalendar monthlyCalendar) {
+        return ResponseEntity.ok(new MonthlyCalendar());
     }
 }

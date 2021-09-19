@@ -4,6 +4,7 @@ import io.applianceskeeper.technicians.data.TechniciansWorkingDaysRepository;
 import io.applianceskeeper.technicians.models.Hour;
 import io.applianceskeeper.technicians.models.TechnicianTerm;
 import io.applianceskeeper.technicians.models.TechnicianWorkingDay;
+import io.applianceskeeper.technicians.models.TechnicianWorkingDayReadDTO;
 import io.applianceskeeper.technicians.utils.TechnicianNotFoundException;
 import io.applianceskeeper.technicians.utils.WorkDayNotFoundException;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -27,17 +29,18 @@ public class TechnicianWorkingDaysService {
     private final TechniciansTermsService termsService;
 
     @Transactional
-    public TechnicianWorkingDay addWorkingDay(Integer technicianId, TechnicianWorkingDay workingDay) throws
+    public TechnicianWorkingDayReadDTO addWorkingDay(Integer technicianId, TechnicianWorkingDay workingDay) throws
             TechnicianNotFoundException {
         workingDay.setTechnician(techniciansService.findById(technicianId));
         var savedWorkingDay = repository.save(workingDay);
         Arrays.stream(Hour.values()).forEach(hour -> termsService.save(new TechnicianTerm(hour, savedWorkingDay)));
         entityManager.flush();
         entityManager.refresh(savedWorkingDay);
-        return savedWorkingDay;
+        return new TechnicianWorkingDayReadDTO(savedWorkingDay);
     }
 
-    public TechnicianWorkingDay checkWorkingDay(Integer technicianId, TechnicianWorkingDay workingDay) throws
+    @Transactional
+    public TechnicianWorkingDayReadDTO checkWorkingDay(Integer technicianId, TechnicianWorkingDay workingDay) throws
             TechnicianNotFoundException {
         try {
             return getTechnicianWorkingDay(technicianId, workingDay.getDate());
@@ -46,7 +49,7 @@ public class TechnicianWorkingDaysService {
         }
     }
 
-    public TechnicianWorkingDay getTechnicianWorkingDay(Integer technicianId, LocalDate workingDayDate) throws
+    public TechnicianWorkingDayReadDTO getTechnicianWorkingDay(Integer technicianId, LocalDate workingDayDate) throws
             TechnicianNotFoundException, WorkDayNotFoundException {
         var session = entityManager.unwrap(Session.class);
         var dateFilter = session.enableFilter("dateFilter");
@@ -54,14 +57,16 @@ public class TechnicianWorkingDaysService {
         var technician = techniciansService.findById(technicianId);
         session.close();
         if (!technician.getWorkingDays().isEmpty()) {
-            return (TechnicianWorkingDay) technician.getWorkingDays().toArray()[0];
+            return new TechnicianWorkingDayReadDTO((TechnicianWorkingDay) technician.getWorkingDays().toArray()[0]);
         } else {
             throw new WorkDayNotFoundException();
         }
     }
 
-    public Set<TechnicianWorkingDay> getWorkingDays(Integer id) throws TechnicianNotFoundException {
+    public Set<TechnicianWorkingDayReadDTO> getWorkingDays(Integer id) throws TechnicianNotFoundException {
         var technician = techniciansService.findById(id);
-        return technician.getWorkingDays();
+        return technician.getWorkingDays().stream()
+                .map(TechnicianWorkingDayReadDTO::new)
+                .collect(Collectors.toSet());
     }
 }

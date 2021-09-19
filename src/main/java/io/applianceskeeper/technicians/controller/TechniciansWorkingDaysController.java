@@ -21,7 +21,7 @@ public class TechniciansWorkingDaysController {
     private final TechnicianWorkingDaysService service;
 
     @GetMapping(value = "/{id}/workingDays")
-    public ResponseEntity<?> getTechnicianWorkingDayHours(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> getTechnicianWorkingDays(@PathVariable("id") Integer id) {
         try {
             return ResponseEntity.ok(service.getWorkingDays(id));
         } catch (TechnicianNotFoundException e) {
